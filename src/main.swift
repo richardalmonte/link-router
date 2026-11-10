@@ -164,13 +164,38 @@ class LinkRouter {
         return (detectedName, detectedBundleId, chain)
     }
     
+    /// Sanitizes provider OAuth URLs to prevent the IDE from forcing its own account via login_hint.
+    /// - Parameter url: Originating authorization URL.
+    /// - Returns: Cleaned URL with login_hint removed and select_account prompt enabled.
+    func sanitizeOAuthURL(url: URL) -> URL {
+        let urlStr = url.absoluteString
+        guard urlStr.contains("accounts.google.com/o/oauth2") else {
+            return url
+        }
+        guard var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+            return url
+        }
+        var items = components.queryItems ?? []
+        // Remove login_hint to prevent provider from locking the login to the IDE account
+        items.removeAll { $0.name.lowercased() == "login_hint" }
+        // Force account selection prompt so the user can choose any account
+        if let idx = items.firstIndex(where: { $0.name.lowercased() == "prompt" }) {
+            items[idx].value = "select_account"
+        } else {
+            items.append(URLQueryItem(name: "prompt", value: "select_account"))
+        }
+        components.queryItems = items
+        return components.url ?? url
+    }
+    
     /// Evaluates rules against the target URL and the sender hierarchy, dispatching to the chosen browser.
     /// - Parameters:
     ///   - url: The destination URL.
     ///   - event: Optional originating Apple Event descriptor.
     func route(url: URL, event: NSAppleEventDescriptor?) {
+        let finalURL = sanitizeOAuthURL(url: url)
         let config = loadConfig()
-        let urlStr = url.absoluteString
+        let urlStr = finalURL.absoluteString
         let sender = resolveSenderInfo(event: event)
         
         var targetBrowser = config.default_browser
@@ -207,7 +232,7 @@ class LinkRouter {
             log("[URL: \(urlStr)] [Source: \(sender.name) | Bundle: \(sender.bundleId) | Chain: \(chainSummary)] -> Routed to '\(targetBrowser)' (via \(matchedRule))")
         }
         
-        openURL(url, with: targetBrowser)
+        openURL(finalURL, with: targetBrowser)
     }
     
     /// Opens the specified URL with a designated browser application.
