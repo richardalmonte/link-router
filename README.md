@@ -91,9 +91,17 @@ LinkRouter is configured using a straightforward JSON file located at `~/.config
     "127.0.0.1": "Comet",
     "dev.local": "Comet"
   },
+  "force_account_picker": true,
   "logging": true
 }
 ```
+
+### Configuration Options:
+* **`default_browser`**: Fallback browser when no other rule matches.
+* **`app_rules`**: Mapping of application name, bundle ID, or parent process name to target browser.
+* **`url_rules`**: Mapping of URL keywords or domain patterns to target browser.
+* **`force_account_picker`**: *(Optional, default: `true`)* Automatically strips `login_hint` and sets `prompt=select_account` on OAuth authorization flows (e.g., Google). This stops IDEs and CLIs from locking plugin/connector logins to the account you use for the IDE.
+* **`logging`**: Enables logging to `~/.config/link-router/router.log`.
 
 ### Rule Evaluation Order:
 1. **URL Rules (`url_rules`):** Evaluated first. If the destination URL contains any configured keyword (case-insensitive), it routes to the specified browser.

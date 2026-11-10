@@ -19,5 +19,6 @@
     "staging.": "Brave Browser",
     "internal.company.com": "Google Chrome"
   },
+  "force_account_picker": true,
   "logging": true
 }

@@ -9,6 +9,8 @@ struct RouterConfig: Codable {
     var app_rules: [String: String]
     /// Key-value mapping of URL keywords or domain patterns to target browsers.
     var url_rules: [String: String]
+    /// Forces OAuth providers (like Google) to show the account picker instead of locking to the IDE account.
+    var force_account_picker: Bool?
     /// Whether link routing decisions should be recorded in router.log.
     var logging: Bool?
 }
@@ -165,9 +167,12 @@ class LinkRouter {
     }
     
     /// Sanitizes provider OAuth URLs to prevent the IDE from forcing its own account via login_hint.
-    /// - Parameter url: Originating authorization URL.
+    /// - Parameters:
+    ///   - url: Originating authorization URL.
+    ///   - enabled: Whether account picker forcing is active.
     /// - Returns: Cleaned URL with login_hint removed and select_account prompt enabled.
-    func sanitizeOAuthURL(url: URL) -> URL {
+    func sanitizeOAuthURL(url: URL, enabled: Bool) -> URL {
+        guard enabled else { return url }
         let urlStr = url.absoluteString
         guard urlStr.contains("accounts.google.com/o/oauth2") else {
             return url
@@ -193,8 +198,8 @@ class LinkRouter {
     ///   - url: The destination URL.
     ///   - event: Optional originating Apple Event descriptor.
     func route(url: URL, event: NSAppleEventDescriptor?) {
-        let finalURL = sanitizeOAuthURL(url: url)
         let config = loadConfig()
+        let finalURL = sanitizeOAuthURL(url: url, enabled: config.force_account_picker ?? true)
         let urlStr = finalURL.absoluteString
         let sender = resolveSenderInfo(event: event)
         
