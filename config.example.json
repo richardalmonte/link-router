@@ -1,0 +1,23 @@
+{
+  "default_browser": "Google Chrome",
+  "app_rules": {
+    "Antigravity": "Comet",
+    "OpenCode": "Comet",
+    "Cursor": "Brave Browser",
+    "Code": "Brave Browser",
+    "Terminal": "Comet",
+    "iTerm": "Comet",
+    "iTerm2": "Comet",
+    "Warp": "Comet",
+    "Ghostty": "Comet",
+    "Alacritty": "Comet"
+  },
+  "url_rules": {
+    "localhost": "Comet",
+    "127.0.0.1": "Comet",
+    "dev.local": "Comet",
+    "staging.": "Brave Browser",
+    "internal.company.com": "Google Chrome"
+  },
+  "logging": true
+}
