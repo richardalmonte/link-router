@@ -27,6 +27,20 @@ fi
 
 touch "$DEST_DIR/LinkRouter.app"
 
+echo "🚀 Requesting macOS to set LinkRouter as default browser..."
+swift - << 'EOF' 2>/dev/null || true
+import AppKit
+
+let appURL = URL(fileURLWithPath: "\(NSHomeDirectory())/Applications/LinkRouter.app")
+let sem = DispatchSemaphore(value: 0)
+NSWorkspace.shared.setDefaultApplication(at: appURL, toOpenURLsWithScheme: "http") { _ in
+    NSWorkspace.shared.setDefaultApplication(at: appURL, toOpenURLsWithScheme: "https") { _ in
+        sem.signal()
+    }
+}
+_ = sem.wait(timeout: .now() + 2)
+EOF
+
 echo ""
 echo "🎉 LinkRouter installed successfully!"
 echo ""
